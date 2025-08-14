@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>MINI Cosmos Dashboard</title>
+<title>Cosmos Dashboard</title>
 <style>
   body { font-family: Arial, sans-serif; background: #f7f7f7; padding: 20px; }
   h1 { text-align: center; }
-  .stats { display: flex; justify-content: center; gap: 30px; margin-bottom: 20px; }
+  .stats { display: flex; justify-content: center; gap: 30px; margin-bottom: 20px; flex-wrap: wrap; }
   .stat-box { background: white; padding: 10px 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
   table { width: 100%; border-collapse: collapse; background: white; }
   th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
@@ -17,7 +17,7 @@
 </head>
 <body>
 
-<h1>MINI Cosmos Chains Dashboard</h1>
+<h1>Cosmos Chains Dashboard</h1>
 
 <div class="stats">
   <div class="stat-box">
@@ -25,6 +25,12 @@
   </div>
   <div class="stat-box">
     <strong>Total Market Cap:</strong> <span id="marketCap">Loading...</span>
+  </div>
+  <div class="stat-box">
+    <strong>BTC Price:</strong> <span id="btcPrice">Loading...</span>
+  </div>
+  <div class="stat-box">
+    <strong>ETH Price:</strong> <span id="ethPrice">Loading...</span>
   </div>
 </div>
 
@@ -131,8 +137,8 @@ async function updateFearGreed(){
   }
 }
 
-// Fetch Total Market Cap (USD)
-async function updateMarketCap(){
+// Fetch Total Market Cap, BTC & ETH Prices
+async function updateMarketData(){
   try {
     const data = await fetchJSON('https://api.coingecko.com/api/v3/global');
     const cap = data.data.total_market_cap.usd;
@@ -140,12 +146,21 @@ async function updateMarketCap(){
   } catch {
     document.getElementById('marketCap').innerText = 'Error';
   }
+
+  try {
+    const prices = await fetchJSON('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
+    document.getElementById('btcPrice').innerText = `$${prices.bitcoin.usd.toLocaleString()}`;
+    document.getElementById('ethPrice').innerText = `$${prices.ethereum.usd.toLocaleString()}`;
+  } catch {
+    document.getElementById('btcPrice').innerText = 'Error';
+    document.getElementById('ethPrice').innerText = 'Error';
+  }
 }
 
 function refreshAll(){
   updateDashboard();
   updateFearGreed();
-  updateMarketCap();
+  updateMarketData();
 }
 
 refreshAll();
