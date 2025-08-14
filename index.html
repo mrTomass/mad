@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Cosmos Dashboard</title>
+<title>MINI Cosmos Dashboard</title>
 <style>
   body { font-family: Arial, sans-serif; background: #f7f7f7; padding: 20px; }
   h1 { text-align: center; }
+  .stats { display: flex; justify-content: center; gap: 30px; margin-bottom: 20px; }
+  .stat-box { background: white; padding: 10px 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
   table { width: 100%; border-collapse: collapse; background: white; }
   th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
   th { background: #333; color: white; }
@@ -16,6 +18,16 @@
 <body>
 
 <h1>Cosmos Chains Dashboard</h1>
+
+<div class="stats">
+  <div class="stat-box">
+    <strong>Fear & Greed Index:</strong> <span id="fngValue">Loading...</span>
+  </div>
+  <div class="stat-box">
+    <strong>Total Market Cap:</strong> <span id="marketCap">Loading...</span>
+  </div>
+</div>
+
 <table>
   <thead>
     <tr>
@@ -34,14 +46,14 @@
 
 <script>
 const chains = [
-   { key:"cosmoshub", label:"Cosmos Hub", api:"https://rest.cosmos.directory/cosmoshub" },
+  { key:"cosmoshub", label:"Cosmos Hub", api:"https://rest.cosmos.directory/cosmoshub" },
   { key:"osmosis",   label:"Osmosis",    api:"https://rest.cosmos.directory/osmosis" },
   { key:"akash",     label:"Akash",      api:"https://rest.cosmos.directory/akash" },
-   { key:"juno",      label:"Juno",       api:"https://rest.cosmos.directory/juno" },
-   { key:"stargaze",  label:"Stargaze",   api:"https://rest.cosmos.directory/stargaze" },
-  { key:'chihuahua', label:'Chihuahua', api:"https://rest.cosmos.directory/chihuahua" },
-  { key:'nolus', label:'Nolus Protocol', api:'https://nolus-api.polkachu.com' },
-  { key:'dymension', label:'Dymension', api:'https://dymension-mainnet-rest.public.blastapi.io' }
+  { key:"juno",      label:"Juno",       api:"https://rest.cosmos.directory/juno" },
+  { key:"stargaze",  label:"Stargaze",   api:"https://rest.cosmos.directory/stargaze" },
+  { key:"chihuahua", label:"Chihuahua",  api:"https://rest.cosmos.directory/chihuahua" },
+  { key:"nolus",     label:"Nolus Protocol", api:"https://nolus-api.polkachu.com" },
+  { key:"dymension", label:"Dymension",  api:"https://dymension-mainnet-rest.public.blastapi.io" }
 ];
 
 async function fetchJSON(url){
@@ -107,8 +119,37 @@ async function updateDashboard(){
   }
 }
 
-updateDashboard();
-setInterval(updateDashboard, 60000);
+// Fetch Fear & Greed Index
+async function updateFearGreed(){
+  try {
+    const data = await fetchJSON('https://api.alternative.me/fng/');
+    const value = data.data[0].value;
+    const classification = data.data[0].value_classification;
+    document.getElementById('fngValue').innerText = `${value} (${classification})`;
+  } catch {
+    document.getElementById('fngValue').innerText = 'Error';
+  }
+}
+
+// Fetch Total Market Cap (USD)
+async function updateMarketCap(){
+  try {
+    const data = await fetchJSON('https://api.coingecko.com/api/v3/global');
+    const cap = data.data.total_market_cap.usd;
+    document.getElementById('marketCap').innerText = `$${cap.toLocaleString()}`;
+  } catch {
+    document.getElementById('marketCap').innerText = 'Error';
+  }
+}
+
+function refreshAll(){
+  updateDashboard();
+  updateFearGreed();
+  updateMarketCap();
+}
+
+refreshAll();
+setInterval(refreshAll, 60000);
 </script>
 
 </body>
