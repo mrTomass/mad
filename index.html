@@ -1,353 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Cosmos Mini Chain Dashboard for mad scientics event</title>
+<meta charset="UTF-8">
+<title>Cosmos Dashboard</title>
 <style>
-  :root{
-    --bg:#0f172a; --fg:#e5e7eb; --muted:#9ca3af;
-    --card:#111827; --thead:#1f2937; --row:#111827;
-    --primary:#38bdf8; --green:#22c55e; --red:#ef4444; --blue:#2563eb;
-    --border:#334155;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
-  h1{margin:16px 12px 8px;text-align:center;color:var(--primary)}
-  .wrap{max-width:1100px;margin:0 auto;padding:12px}
-  table{width:100%;border-collapse:collapse;border-radius:12px;overflow:hidden}
-  thead th{background:var(--thead);text-align:left;padding:12px;border-bottom:1px solid var(--border);font-weight:600}
-  tbody td{padding:12px;border-bottom:1px solid var(--border);background:var(--row)}
-  .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.85rem}
-  .ok{color:var(--green);font-weight:700}
-  .bad{color:var(--red);font-weight:700}
-  .btn{background:var(--blue);color:white;border:none;border-radius:8px;padding:8px 10px;cursor:pointer;font-weight:600}
-  .btn:disabled{opacity:.6;cursor:not-allowed}
-  .subrow{background:#0b1220}
-  .panel{padding:12px;border-top:1px solid var(--border)}
-  .panel-head{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px}
-  .panel-title{font-weight:700}
-  .search{flex:1;max-width:420px}
-  .search input{width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:#0a0f1e;color:var(--fg)}
-  .val-table{width:100%;border-collapse:collapse}
-  .val-table th,.val-table td{padding:8px;border-bottom:1px solid var(--border);font-size:.92rem}
-  .val-head{background:#0f1b33}
-  .val-list{max-height:50vh;overflow:auto;border:1px solid var(--border);border-radius:8px}
-  .muted{color:var(--muted)}
-  .right{text-align:right}
-  .small{font-size:.9rem}
-  .controls{display:flex;gap:8px;align-items:center}
-  .load-more{margin-top:8px}
-  @media (max-width:760px){
-    thead{display:none}
-    tbody tr{display:block;margin:10px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
-    tbody td{display:flex;justify-content:space-between;gap:10px}
-    tbody td::before{content:attr(data-label);font-weight:700;color:var(--muted)}
-    .subrow td{display:block}
-  }
+  body { font-family: Arial, sans-serif; background: #f7f7f7; padding: 20px; }
+  h1 { text-align: center; }
+  table { width: 100%; border-collapse: collapse; background: white; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+  th { background: #333; color: white; }
+  tr:nth-child(even) { background: #f0f0f0; }
+  tr.offline { background: #ffe0e0; }
 </style>
 </head>
 <body>
-  <h1>Cosmos Mini Chain Dashboard</h1>
-  <div class="wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Chain</th>
-          <th>Latest Block</th>
-          <th>Block Time</th>
-          <th>Validators </th>
-          <th>Active Proposals</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="chainTable">
-        <tr><td data-label="Loading" colspan="7">Loading…</td></tr>
-      </tbody>
-    </table>
-    <p class="small muted">Auto-refresh: every 1 minute • Data via rest.cosmos.directory </p>
-  </div>
+
+<h1>Cosmos Chains Dashboard</h1>
+<table>
+  <thead>
+    <tr>
+      <th>Chain</th>
+      <th>Latest Block</th>
+      <th>Block Time</th>
+      <th>Validators</th>
+      <th>Active Proposals</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody id="chainTable">
+    <tr><td colspan="6">Loading...</td></tr>
+  </tbody>
+</table>
 
 <script>
-const CHAINS = [
-  { key:"cosmoshub", label:"Cosmos Hub", api:"https://rest.cosmos.directory/cosmoshub" },
+const chains = [
+   { key:"cosmoshub", label:"Cosmos Hub", api:"https://rest.cosmos.directory/cosmoshub" },
   { key:"osmosis",   label:"Osmosis",    api:"https://rest.cosmos.directory/osmosis" },
   { key:"akash",     label:"Akash",      api:"https://rest.cosmos.directory/akash" },
-  { key:"juno",      label:"Juno",       api:"https://rest.cosmos.directory/juno" },
-  { key:"stargaze",  label:"Stargaze",   api:"https://rest.cosmos.directory/stargaze" },
+   { key:"juno",      label:"Juno",       api:"https://rest.cosmos.directory/juno" },
+   { key:"stargaze",  label:"Stargaze",   api:"https://rest.cosmos.directory/stargaze" },
+  { key:'chihuahua', label:'Chihuahua', api:"https://rest.cosmos.directory/chihuahua" },
+  { key:'nolus', label:'Nolus Protocol', api:'https://nolus-api.polkachu.com' },
+  { key:'dymension', label:'Dymension', api:'https://dymension-mainnet-rest.public.blastapi.io' }
 ];
 
-const state = {
-  rows: {},            // per-chain summary
-  validators: {},      // per-chain full validator list (cached)
-  bondedTotals: {},    // per-chain total bonded tokens
-  showPanelFor: null,  // which chain is expanded
-  viewLimits: {},      // pagination size per chain
-};
-
-function fmtInt(x){ if(x===null||x===undefined||x==='-') return '-'; return Number(x).toLocaleString(); }
-function fmtPct(x, digits=2){ return (Number(x).toFixed(digits)) + '%'; }
-function fmtSecs(s){ return s.toFixed(1)+'s'; }
-function num(s){ const n = Number(s); return isNaN(n)?0:n; }
-function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
-
 async function fetchJSON(url){
-  const r = await fetch(url);
-  if(!r.ok) throw new Error(r.status+" "+url);
-  return r.json();
+  const res = await fetch(url);
+  if(!res.ok) throw new Error(`HTTP error ${res.status}`);
+  return res.json();
+}
+
+function fmtSecs(secs){
+  if(secs < 60) return secs.toFixed(1) + 's';
+  if(secs < 3600) return (secs/60).toFixed(1) + 'm';
+  if(secs < 86400) return (secs/3600).toFixed(1) + 'h';
+  return (secs/86400).toFixed(1) + 'd';
 }
 
 async function fetchChainSummary(chain){
   try{
-    // latest & previous block to compute block time
     const latest = await fetchJSON(`${chain.api}/cosmos/base/tendermint/v1beta1/blocks/latest`);
     const height = Number(latest.block.header.height);
     const t2 = new Date(latest.block.header.time).getTime();
 
     let blockTime = '-';
-    if(height>1){
+    if(height > 1){
       const prev = await fetchJSON(`${chain.api}/cosmos/base/tendermint/v1beta1/blocks/${height-1}`);
       const t1 = new Date(prev.block.header.time).getTime();
       blockTime = fmtSecs((t2 - t1)/1000);
     }
 
-    // validators (bonded) count — use pagination.limit to ensure full set
     const v = await fetchJSON(`${chain.api}/cosmos/staking/v1beta1/validators?status=BOND_STATUS_BONDED&pagination.limit=500`);
-    const valCount = (v.validators||[]).length;
+    const valCount = (v.validators || []).length;
 
-    // active proposals
-    let actProps = 0;
+    let actProps = '-';
     try{
-      const gov = await fetchJSON(`${chain.api}/cosmos/gov/v1beta1/proposals?proposal_status=PROPOSAL_STATUS_VOTING_PERIOD`);
-      actProps = (gov.proposals||[]).length;
-    }catch{ actProps = 0; }
-
-    return {
-      ok:true,
-      name: chain.label,
-      key: chain.key,
-      api: chain.api,
-      latestBlock: String(height),
-      blockTime,
-      validators: valCount,
-      proposals: actProps,
-      status: 'live'
-    };
-  }catch(e){
-    return {
-      ok:false,
-      name: chain.label,
-      key: chain.key,
-      api: chain.api,
-      latestBlock: '-',
-      blockTime: '-',
-      validators: '-',
-      proposals: '-',
-      status: 'offline'
-    };
-  }
-}
-
-async function fetchValidators(chain){
-  // cached?
-  if(state.validators[chain.key]) return state.validators[chain.key];
-
-  // total bonded for voting power %
-  try{
-    const pool = await fetchJSON(`${chain.api}/cosmos/staking/v1beta1/pool`);
-    state.bondedTotals[chain.key] = num(pool.pool?.bonded_tokens);
-  }catch{
-    state.bondedTotals[chain.key] = 0;
-  }
-
-  // fetch bonded validators with generous limit
-  const data = await fetchJSON(`${chain.api}/cosmos/staking/v1beta1/validators?status=BOND_STATUS_BONDED&pagination.limit=500`);
-  const list = (data.validators||[]).map(v=>{
-    const commission = num(v.commission?.commission_rates?.rate)*100;
-    const tokens = num(v.tokens);
-    const bonded = state.bondedTotals[chain.key] || 0;
-    const vpct = bonded>0 ? (tokens*100/bonded) : null;
-    return {
-      moniker: v.description?.moniker || '(unknown)',
-      address: v.operator_address,
-      commission,
-      tokens,
-      vpct,
-    };
-  }).sort((a,b)=> b.tokens - a.tokens);
-
-  state.validators[chain.key] = list;
-  return list;
-}
-
-function renderTable(){
-  const tbody = document.getElementById('chainTable');
-  const rows = CHAINS.map(c => state.rows[c.key] || ({
-    name:c.label,key:c.key,api:c.api,latestBlock:'-',blockTime:'-',validators:'-',proposals:'-',status:'offline'
-  }));
-
-  tbody.innerHTML = '';
-  rows.forEach(summary=>{
-    const statusCls = summary.status==='live' ? 'ok' : 'bad';
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td data-label="Chain">${summary.name}</td>
-      <td data-label="Latest Block">${fmtInt(summary.latestBlock)}</td>
-      <td data-label="Block Time">${summary.blockTime}</td>
-      <td data-label="Validators">${fmtInt(summary.validators)}</td>
-      <td data-label="Active Proposals">${fmtInt(summary.proposals)}</td>
-      <td data-label="Status" class="${statusCls}">${summary.status}</td>
-      <td data-label="Actions"><button class="btn" data-open="${summary.key}">Validators</button></td>
-    `;
-    tbody.appendChild(tr);
-
-    // expandable subrow
-    const sub = document.createElement('tr');
-    sub.className = 'subrow';
-    const td = document.createElement('td');
-    td.colSpan = 7;
-    td.innerHTML = `
-      <div class="panel" id="panel-${summary.key}" style="display:${state.showPanelFor===summary.key?'block':'none'}">
-        <div class="panel-head">
-          <div class="panel-title">Validators — ${summary.name}</div>
-          <div class="controls">
-            <div class="search"><input type="text" id="search-${summary.key}" placeholder="Search validator name… (min 2 chars)" /></div>
-            <button class="btn" data-close="${summary.key}">Close</button>
-          </div>
-        </div>
-        <div class="val-list">
-          <table class="val-table">
-            <thead class="val-head">
-              <tr>
-                <th>Name</th>
-                <th class="right">Commission</th>
-                <th class="right">Voting Power</th>
-                <th class="right">VP %</th>
-              </tr>
-            </thead>
-            <tbody id="vals-${summary.key}">
-              <tr><td colspan="4" class="muted">Loading…</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="right"><button class="btn load-more" data-more="${summary.key}">Load more</button></div>
-      </div>
-    `;
-    sub.appendChild(td);
-    tbody.appendChild(sub);
-  });
-
-  // attach handlers
-  tbody.querySelectorAll('button[data-open]').forEach(btn=>{
-    btn.onclick = async ()=>{
-      const key = btn.getAttribute('data-open');
-      await openPanel(key);
-    };
-  });
-  tbody.querySelectorAll('button[data-close]').forEach(btn=>{
-    btn.onclick = ()=>{
-      const key = btn.getAttribute('data-close');
-      closePanel(key);
-    };
-  });
-  tbody.querySelectorAll('button[data-more]').forEach(btn=>{
-    btn.onclick = ()=>{
-      const key = btn.getAttribute('data-more');
-      state.viewLimits[key] = Math.min((state.viewLimits[key]||25)+25, (state.validators[key]?.length||0));
-      renderValidators(key);
-    };
-  });
-  // search inputs (debounced)
-  CHAINS.forEach(c=>{
-    const input = document.getElementById(`search-${c.key}`);
-    if(input){
-      input.oninput = debounce(()=> renderValidators(c.key), 200);
+      const gov = await fetchJSON(`${chain.api}/cosmos/gov/v1beta1/proposals?proposal_status=2`);
+      actProps = (gov.proposals || []).length;
+    }catch{
+      actProps = '-';
     }
-  });
-}
 
-async function openPanel(key){
-  // hide any other open panel
-  if(state.showPanelFor && state.showPanelFor !== key){
-    const prev = document.getElementById(`panel-${state.showPanelFor}`);
-    if(prev) prev.style.display = 'none';
-  }
-  state.showPanelFor = key;
-  state.viewLimits[key] = 25;
+    return { ok:true, name: chain.label, latestBlock: height, blockTime, validators: valCount, proposals: actProps, status: 'live' };
 
-  const panel = document.getElementById(`panel-${key}`);
-  if(panel) panel.style.display = 'block';
-
-  // fetch validators if not cached
-  const chain = CHAINS.find(c=>c.key===key);
-  try{
-    await fetchValidators(chain);
-  }catch(e){
-    const body = document.getElementById(`vals-${key}`);
-    if(body) body.innerHTML = `<tr><td colspan="4" class="muted">Failed to fetch validators.</td></tr>`;
-    return;
-  }
-  renderValidators(key);
-
-  // scroll panel into view on open
-  panel?.scrollIntoView({behavior:'smooth', block:'center'});
-}
-
-function closePanel(key){
-  const panel = document.getElementById(`panel-${key}`);
-  if(panel) panel.style.display = 'none';
-  state.showPanelFor = null;
-}
-
-function renderValidators(key){
-  const body = document.getElementById(`vals-${key}`);
-  const list = state.validators[key] || [];
-  const qEl = document.getElementById(`search-${key}`);
-  const q = (qEl?.value || '').trim().toLowerCase();
-
-  let filtered = list;
-  if(q.length >= 2){
-    filtered = list.filter(v => v.moniker.toLowerCase().includes(q));
-  }
-  const limit = state.viewLimits[key] || 25;
-  const toShow = filtered.slice(0, limit);
-
-  if(toShow.length === 0){
-    body.innerHTML = `<tr><td colspan="4" class="muted">${q.length<2?'Type at least 2 characters to search.':'No validators match.'}</td></tr>`;
-    return;
-  }
-
-  body.innerHTML = toShow.map(v=>{
-    const comm = isFinite(v.commission) ? fmtPct(v.commission, 2) : '-';
-    const vp = v.tokens ? fmtInt(v.tokens) : '-';
-    const vpct = (v.vpct!=null && isFinite(v.vpct)) ? fmtPct(v.vpct, 3) : '-';
-    return `<tr>
-      <td>${escapeHtml(v.moniker)}</td>
-      <td class="right">${comm}</td>
-      <td class="right">${vp}</td>
-      <td class="right">${vpct}</td>
-    </tr>`;
-  }).join('');
-
-  // toggle "Load more"
-  const btn = document.querySelector(`button[data-more="${key}"]`);
-  if(btn){
-    btn.style.display = filtered.length > limit ? 'inline-block' : 'none';
+  }catch{
+    return { ok:false, name: chain.label, latestBlock: '-', blockTime: '-', validators: '-', proposals: '-', status: 'offline' };
   }
 }
 
-function escapeHtml(s){ return s.replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
-
-async function refreshAll(){
-  const summaries = await Promise.all(CHAINS.map(fetchChainSummary));
-  summaries.forEach(s => state.rows[s.key] = s);
-  renderTable();
+async function updateDashboard(){
+  const table = document.getElementById('chainTable');
+  table.innerHTML = '';
+  for(const chain of chains){
+    const data = await fetchChainSummary(chain);
+    const row = document.createElement('tr');
+    if(!data.ok) row.classList.add('offline');
+    row.innerHTML = `
+      <td>${data.name}</td>
+      <td>${data.latestBlock}</td>
+      <td>${data.blockTime}</td>
+      <td>${data.validators}</td>
+      <td>${data.proposals}</td>
+      <td>${data.status}</td>
+    `;
+    table.appendChild(row);
+  }
 }
 
-// initial load + 1-minute refresh
-refreshAll();
-setInterval(refreshAll, 60_000);
+updateDashboard();
+setInterval(updateDashboard, 60000);
 </script>
+
 </body>
 </html>
