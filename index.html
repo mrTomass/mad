@@ -6,49 +6,271 @@
 <style>
   body { font-family: Arial, sans-serif; background: #f7f7f7; padding: 20px; }
   h1 { text-align: center; }
-  .stats { display: flex; justify-content: center; gap: 30px; margin-bottom: 20px; flex-wrap: wrap; }
-  .stat-box { background: white; padding: 10px 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-  table { width: 100%; border-collapse: collapse; background: white; }
+  table { width: 100%; border-collapse: collapse; background: white; margin-bottom: 20px; }
   th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
   th { background: #333; color: white; }
   tr:nth-child(even) { background: #f0f0f0; }
   tr.offline { background: #ffe0e0; }
+  .validator-card {
+    background: white; border-radius: 10px; padding: 20px; text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto 20px auto;
+  }
+  .validator-card img {
+    width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 10px;
+    border: 2px solid #ccc;
+  }
+  .validator-name { font-weight: bold; font-size: 1.2em; }
+  .validator-detail { color: #555; }
+
+  /* Stats Bar */
+  .stats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+  .stat-box {
+    background: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-size: 0.95em;
+  }
+
+  /* Background Animation */
+  .container {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .container::before {
+    content: "";
+    position: absolute;
+    inset: -145%;
+    rotate: -45deg;
+    background: #032B44;
+    background-image: radial-gradient(
+        4px 100px at 0px 235px,
+        rgb(255, 140, 17),
+        #0000
+      ),
+      radial-gradient(4px 100px at 300px 235px, rgb(255, 119, 0), #884e2800),
+      radial-gradient(
+        1.5px 1.5px at 150px 117.5px,
+        rgb(255, 144, 9) 100%,
+        #0000 150%
+      ),
+      radial-gradient(4px 100px at 0px 252px, rgb(156, 14, 137), #0000),
+      radial-gradient(4px 100px at 300px 252px, rgb(23, 41, 206), #0000),
+      radial-gradient(
+        1.5px 1.5px at 150px 126px,
+        rgb(247, 102, 18) 100%,
+        #0000 150%
+      ),
+      radial-gradient(4px 100px at 0px 150px, rgb(249, 121, 16), #0000),
+      radial-gradient(4px 100px at 300px 150px, rgb(255, 128, 18), #0000),
+      radial-gradient(
+        1.5px 1.5px at 150px 75px,
+        rgb(255, 116, 10) 100%,
+        #0000 150%
+      ),
+      radial-gradient(4px 100px at 0px 253px, rgb(249, 137, 17), #0000),
+      radial-gradient(4px 100px at 300px 253px, rgb(248, 107, 14), #0000),
+      radial-gradient(
+        1.5px 1.5px at 150px 126.5px,
+        rgb(252, 129, 14) 100%,
+        #0000 150%
+      ),
+      radial-gradient(4px 100px at 0px 204px, rgb(234, 115, 18), #0000),
+      radial-gradient(4px 100px at 300px 204px, rgb(255, 139, 6), #0000),
+      radial-gradient(
+        1.5px 1.5px at 150px 102px,
+        rgb(255, 128, 9) 100%,
+        #0000 150%
+      ),
+      radial-gradient(4px 100px at 0px 134px, rgb(249, 133, 9), #0000),
+      radial-gradient(4px 100px at 300px 134px, rgb(251, 125, 15), #0000),
+      radial-gradient(
+        1.5px 1.5px at 150px 67px,
+        rgb(255, 146, 13) 100%,
+        #0000 150%
+      ),
+      radial-gradient(4px 100px at 0px 179px, rgb(249, 137, 17), #0000),
+      radial-gradient(4px 100px at 300px 179px, rgb(253, 122, 6), #0000),
+      radial-gradient(
+        1.5px 1.5px at 150px 89.5px,
+        rgb(234, 132, 7) 100%,
+        #0000 150%
+      ),
+      radial-gradient(4px 100px at 0px 299px, rgb(255, 115, 0), #0000),
+      radial-gradient(4px 100px at 300px 299px, rgb(255, 136, 0), #0000),
+      radial-gradient(
+        1.5px 1.5px at 150px 149.5px,
+        rgb(255, 123, 0) 100%,
+        #0000 150%
+      ),
+      radial-gradient(4px 100px at 0px 215px, rgb(255, 145, 0), #0000),
+      radial-gradient(4px 100px at 300px 215px, rgb(255, 132, 0), #0000),
+      radial-gradient(
+        1.5px 1.5px at 150px 107.5px,
+        rgb(255, 136, 0) 100%,
+        #0000 150%
+      ),
+      radial-gradient(4px 100px at 0px 281px, rgb(255, 170, 0), #0000),
+      radial-gradient(4px 100px at 300px 281px, rgb(255, 115, 0), #0000),
+      radial-gradient(
+        1.5px 1.5px at 150px 140.5px,
+        rgb(255, 119, 0) 100%,
+        #0000 150%
+      ),
+      radial-gradient(4px 100px at 0px 158px, rgb(255, 123, 0), #0000),
+      radial-gradient(4px 100px at 300px 158px, rgb(255, 132, 0), #0000),
+      radial-gradient(
+        1.5px 1.5px at 150px 79px,
+        rgb(255, 149, 0) 100%,
+        #0000 150%
+      ),
+      radial-gradient(4px 100px at 0px 210px, rgb(255, 123, 0), #0000),
+      radial-gradient(4px 100px at 300px 210px, rgb(255, 162, 0), #0000),
+      radial-gradient(
+        1.5px 1.5px at 150px 105px,
+        rgb(255, 136, 0) 100%,
+        #0000 150%
+      );
+    background-size:
+      300px 235px,
+      300px 235px,
+      300px 235px,
+      300px 252px,
+      300px 252px,
+      300px 252px,
+      300px 150px,
+      300px 150px,
+      300px 150px,
+      300px 253px,
+      300px 253px,
+      300px 253px,
+      300px 204px,
+      300px 204px,
+      300px 204px,
+      300px 134px,
+      300px 134px,
+      300px 134px,
+      300px 179px,
+      300px 179px,
+      300px 179px,
+      300px 299px,
+      300px 299px,
+      300px 299px,
+      300px 215px,
+      300px 215px,
+      300px 215px,
+      300px 281px,
+      300px 281px,
+      300px 281px,
+      300px 158px,
+      300px 158px,
+      300px 158px,
+      300px 210px,
+      300px 210px,
+      300px 210px;
+    animation: hi 150s linear infinite;
+  }
+
+  h1 {
+  text-align: center;
+  color: #4116bf;
+}
+
+.dashboard-container {
+  max-width: 900px;
+  margin: 0 auto 30px auto;
+}
+.akash-chat-card {
+  max-width: 900px;
+  margin: 0 auto 30px auto;
+}
 </style>
 </head>
 <body>
 
-<h1>Cosmos Chains Dashboard</h1>
+<div class="dashboard-container">
+  <!-- Stats Bar -->
+  <div class="stats">
+    <div class="stat-box">
+      <strong>Fear &amp; Greed Index:</strong> <span id="fngValue">Loading...</span>
+    </div>
+    <div class="stat-box">
+      <strong>Total Market Cap:</strong> <span id="marketCap">Loading...</span>
+    </div>
+    <div class="stat-box">
+      <strong>BTC Price:</strong> <span id="btcPrice">Loading...</span>
+    </div>
+    <div class="stat-box">
+      <strong>ETH Price:</strong> <span id="ethPrice">Loading...</span>
+    </div>
+  </div>
 
-<div class="stats">
-  <div class="stat-box">
-    <strong>Fear & Greed Index:</strong> <span id="fngValue">Loading...</span>
+  <!-- Green Box -->
+  <div style="text-align:center; margin-bottom:15px;">
+    <div style="display:inline-block; background:#28a745; color:white; padding:8px 16px; border-radius:6px; font-weight:bold;">
+      <a href="https://www.madscientists.io/" target="_blank" style="color:white; text-decoration:none;">
+        /madscientists.io/
+      </a>
+    </div>
   </div>
-  <div class="stat-box">
-    <strong>Total Market Cap:</strong> <span id="marketCap">Loading...</span>
+
+
+<!-- Green Box -->
+  <div style="text-align:center; margin-bottom:15px;">
+    <div style="display:inline-block; background:#2024ea; color:white; padding:8px 16px; border-radius:6px; font-weight:bold;">
+      <a href="https://osmosis.zone/" target="_blank" style="color:white; text-decoration:none;">
+        /osmosis.zone/
+      </a>
+    </div>
   </div>
-  <div class="stat-box">
-    <strong>BTC Price:</strong> <span id="btcPrice">Loading...</span>
+
+
+
+  <h1 style="color: #5b668b;">Mini Cosmos Chains Dashboard StarterPack</h1>
+
+  <!-- css background moving --> 
+  <div class="container"></div>
+
+  <div id="validatorMinute" class="validator-card">
+    <div><strong>Random Validator of the Minute</strong></div>
+    <img id="validatorAvatar" src="" alt="Validator Avatar">
+    <div id="validatorName" class="validator-name">Loading...</div>
+    <div id="validatorCommission" class="validator-detail"></div>
   </div>
-  <div class="stat-box">
-    <strong>ETH Price:</strong> <span id="ethPrice">Loading...</span>
-  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Chain</th>
+        <th>Latest Block</th>
+        <th>Block Time</th>
+        <th>Validators</th>
+        <th>Active Proposals</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="chainTable">
+      <tr><td colspan="6">Loading...</td></tr>
+    </tbody>
+  </table>
 </div>
 
-<table>
-  <thead>
-    <tr>
-      <th>Chain</th>
-      <th>Latest Block</th>
-      <th>Block Time</th>
-      <th>Validators</th>
-      <th>Active Proposals</th>
-      <th>Status</th>
-    </tr>
-  </thead>
-  <tbody id="chainTable">
-    <tr><td colspan="6">Loading...</td></tr>
-  </tbody>
-</table>
+<!-- Akash Chat Box stays outside -->
+<div class="validator-card akash-chat-card">
+  <div><strong>Ask me anything about crypto</strong></div>
+  <input id="akashChatInput" type="text" placeholder="Ask Akash ChatGPT..." style="width:80%;padding:8px;">
+  <button onclick="akashChatSend()" style="padding:8px 16px;">Send</button>
+  <div id="akashChatResponse" style="margin-top:10px;min-height:40px;color:#333;"></div>
+</div>
 
 <script>
 const chains = [
@@ -57,9 +279,9 @@ const chains = [
   { key:"akash",     label:"Akash",      api:"https://rest.cosmos.directory/akash" },
   { key:"juno",      label:"Juno",       api:"https://rest.cosmos.directory/juno" },
   { key:"stargaze",  label:"Stargaze",   api:"https://rest.cosmos.directory/stargaze" },
-  { key:"chihuahua", label:"Chihuahua",  api:"https://rest.cosmos.directory/chihuahua" },
+  { key:'chihuahua', label:'Chihuahua',  api:"https://rest.cosmos.directory/chihuahua" },
   { key:"nolus",     label:"Nolus Protocol", api:"https://nolus-api.polkachu.com" },
-  { key:"dymension", label:"Dymension",  api:"https://dymension-mainnet-rest.public.blastapi.io" }
+  { key:'dymension', label:'Dymension',  api:'https://dymension-mainnet-rest.public.blastapi.io' }
 ];
 
 async function fetchJSON(url){
@@ -125,47 +347,93 @@ async function updateDashboard(){
   }
 }
 
-// Fetch Fear & Greed Index
-async function updateFearGreed(){
+async function updateValidatorOfMinute(){
   try {
-    const data = await fetchJSON('https://api.alternative.me/fng/');
-    const value = data.data[0].value;
-    const classification = data.data[0].value_classification;
-    document.getElementById('fngValue').innerText = `${value} (${classification})`;
-  } catch {
-    document.getElementById('fngValue').innerText = 'Error';
+    const randomChain = chains[Math.floor(Math.random() * chains.length)];
+    const valData = await fetchJSON(`${randomChain.api}/cosmos/staking/v1beta1/validators?status=BOND_STATUS_BONDED&pagination.limit=500`);
+    if(!valData.validators || valData.validators.length === 0) throw new Error("No validators");
+
+    const randomVal = valData.validators[Math.floor(Math.random() * valData.validators.length)];
+    const commissionRate = (parseFloat(randomVal.commission.commission_rates.rate) * 100).toFixed(2) + "%";
+
+    let valLink = "#";
+    let valLinkLabel = randomVal.description.moniker;
+    if (randomVal.operator_address) {
+      valLink = `https://www.mintscan.io/${randomChain.key}/validators/${randomVal.operator_address}`;
+    }
+
+    document.getElementById('validatorName').innerHTML = `<a href="${valLink}" target="_blank" rel="noopener">${valLinkLabel} (${randomChain.label})</a>`;
+    document.getElementById('validatorCommission').innerText = `Commission: ${commissionRate}`;
+    document.getElementById('validatorAvatar').style.display = "none";
+
+  } catch (err) {
+    document.getElementById('validatorName').innerText = "Error loading validator";
+    document.getElementById('validatorCommission').innerText = "";
+    document.getElementById('validatorAvatar').style.display = "none";
   }
 }
 
-// Fetch Total Market Cap, BTC & ETH Prices
-async function updateMarketData(){
+async function loadStats(){
   try {
-    const data = await fetchJSON('https://api.coingecko.com/api/v3/global');
-    const cap = data.data.total_market_cap.usd;
-    document.getElementById('marketCap').innerText = `$${cap.toLocaleString()}`;
-  } catch {
-    document.getElementById('marketCap').innerText = 'Error';
-  }
+    // Fear & Greed
+    const fng = await fetchJSON("https://api.alternative.me/fng/");
+    document.getElementById('fngValue').innerText = fng.data?.[0]?.value_classification || "N/A";
 
+    // Market Cap + BTC + ETH from CoinGecko
+    const market = await fetchJSON("https://api.coingecko.com/api/v3/global");
+    const totalCap = market.data?.total_market_cap?.usd || 0;
+    document.getElementById('marketCap').innerText = "$" + totalCap.toLocaleString();
+
+    const prices = await fetchJSON("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd");
+    document.getElementById('btcPrice').innerText = "$" + (prices.bitcoin?.usd?.toLocaleString() || "N/A");
+    document.getElementById('ethPrice').innerText = "$" + (prices.ethereum?.usd?.toLocaleString() || "N/A");
+
+  } catch (err) {
+    console.error("Stats load failed", err);
+  }
+}
+
+async function akashChatSend() {
+  const input = document.getElementById('akashChatInput').value;
+  const responseDiv = document.getElementById('akashChatResponse');
+  responseDiv.innerText = "Loading...";
   try {
-    const prices = await fetchJSON('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
-    document.getElementById('btcPrice').innerText = `$${prices.bitcoin.usd.toLocaleString()}`;
-    document.getElementById('ethPrice').innerText = `$${prices.ethereum.usd.toLocaleString()}`;
-  } catch {
-    document.getElementById('btcPrice').innerText = 'Error';
-    document.getElementById('ethPrice').innerText = 'Error';
+    const res = await fetch('https://chatapi.akash.network/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer sk-ZVmi9iRLe3bB5hbBxkDWRA'
+      },
+      body: JSON.stringify({
+        model: "Meta-Llama-3-1-8B-Instruct-FP8",
+        messages: [
+          {
+            role: "user",
+            content: input || "Who are you?"
+          }
+        ]
+      })
+    });
+    if (!res.ok) throw new Error("API error");
+    const data = await res.json();
+    const answer = data.choices?.[0]?.message?.content || JSON.stringify(data);
+    responseDiv.innerText = answer;
+  } catch (err) {
+    responseDiv.innerText = "Error: " + err.message;
   }
 }
 
 function refreshAll(){
+  loadStats();
   updateDashboard();
-  updateFearGreed();
-  updateMarketData();
+  updateValidatorOfMinute();
 }
 
 refreshAll();
 setInterval(refreshAll, 60000);
 </script>
+
+
 
 </body>
 </html>
