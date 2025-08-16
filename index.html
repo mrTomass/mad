@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Mini Cosmos Dashboard StarterPack</title>
+<title>Cosmos Dashboard</title>
 <style>
   body { font-family: Arial, sans-serif; background: #f7f7f7; padding: 20px; }
   h1 { text-align: center; }
@@ -193,6 +193,15 @@
   max-width: 900px;
   margin: 0 auto 30px auto;
 }
+
+.status-live {
+  color: #28a745;
+  font-weight: bold;
+}
+.status-offline {
+  color: #e53935;
+  font-weight: bold;
+}
 </style>
 </head>
 <body>
@@ -341,7 +350,7 @@ async function updateDashboard(){
       <td>${data.blockTime}</td>
       <td>${data.validators}</td>
       <td>${data.proposals}</td>
-      <td>${data.status}</td>
+      <td class="status-${data.status}">${data.status}</td>
     `;
     table.appendChild(row);
   }
